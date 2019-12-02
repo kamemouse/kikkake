@@ -116,7 +116,6 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
     func resetTimer() {
         stopTimer()
         timerTotalDuration = 0
-        self.timerLabel.text = "0"
     }
 
     @objc private func handleTimer(_ timer: Timer) {
@@ -306,26 +305,33 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
             
             guard let faceDetectionRequest = request as? VNDetectFaceRectanglesRequest,
                 let results = faceDetectionRequest.results as? [VNFaceObservation] else {
-                    print("None  \(self.nowStr)")
-                    self.resetTimer()
-                    self.isLooking = false
                     return
             }
             DispatchQueue.main.async {
+                if results.count == 0 {
+//                    print("None  \(self.nowStr)")
+                    if self.isLooking {
+                        self.resetTimer()
+                        self.isLooking = false
+                        self.timerLabel.text = "0"
+                    }
+                }
+                
                 // Add the observations to the tracking list
                 for observation in results {
                     // 顔の向き
                     if let yaw = observation.yaw {
 //                        print(yaw)
                         if !self.isLooking, yaw == 0 {
-                            print("Start \(self.nowStr)")
+//                            print("Start \(self.nowStr)")
                             self.startTimer()
                             self.isLooking = true
                         }
                         if self.isLooking, yaw != 0 {
-                            print("End   \(self.nowStr)")
+//                            print("End   \(self.nowStr)")
                             self.resetTimer()
                             self.isLooking = false
+                            self.timerLabel.text = "0"
                         }
                     }
                     
